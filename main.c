@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 #include "generateboard.h"
+#include "SA_algorithm.h"
 
 #define MAX_SIZE 16 // Maksymalny rozmiar planszy
 //globalne zmienne przechowujace stan gry
@@ -50,38 +52,33 @@ void copyBoard(int **src, int **dest) {
  */
 void removeCells(int num) {
     int removed = 0;
-    
-    // Najpierw stwórz listę wszystkich możliwych pozycji
-    int totalCells = size * size;
-    int *positions = malloc(totalCells * sizeof(int));
-    
-    // Wypełnij listę kolejnymi indeksami
-    for (int i = 0; i < totalCells; i++) {
-        positions[i] = i;
-    }
-    
-    // Wymieszaj pozycje (Fisher-Yates shuffle)
-    for (int i = totalCells - 1; i > 0; i--) {
-        int j = rand() % (i + 1);
-        int temp = positions[i];
-        positions[i] = positions[j];
-        positions[j] = temp;
-    }
-    
-    // Usuń pierwszych 'num' komórek z wymieszanej listy
-    for (int i = 0; i < totalCells && removed < num; i++) {
-        int pos = positions[i];
-        int row = pos / size;
-        int col = pos % size;
-        
-        if (board[row][col] != 0) {
-            board[row][col] = 0;
-            isFixed[row][col] = 0;
+    int attempts = 0;
+    int maxAttempts = size * size * 2; // Ograniczenie liczby prób
+    // usuwanie w losowych miejscach
+    while (removed < num && attempts < maxAttempts) {
+        int r = rand() % size;
+        int c = rand() % size;
+        if (board[r][c] != 0) {
+            board[r][c] = 0;
+            isFixed[r][c] = 0;
             removed++;
         }
+        attempts++;
     }
     
-    free(positions);
+    if (removed < num) {
+        // Jeśli nie udało się usunąć wystarczającej liczby komórek,
+        // przejdź przez planszę i usuń pozostałe
+        for (int i = 0; i < size && removed < num; i++) {
+            for (int j = 0; j < size && removed < num; j++) {
+                if (board[i][j] != 0) {
+                    board[i][j] = 0;
+                    isFixed[i][j] = 0;
+                    removed++;
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -154,6 +151,42 @@ void playGame() {
     int moveCount = 0;
     while (1) {
         printBoard();
+        if (size == 9) {
+            char choice;
+            printf("Czy chcesz wykorzystać algorytm SA do rozwiązania Sudoku? (T/N): ");
+            scanf(" %c", &choice);  
+            while(getchar() != '\n'); // Clear input buffer
+        
+            if (choice == 'T' || choice == 't') {
+                printf("Uruchamianie algorytmu wyżarzania...\n");
+                double T_start = 5.0;
+                double T_end = 1e-3;
+                double alpha = 0.999;
+                int max_iterations = 1000000;
+                
+                // Make a copy of isFixed for SA algorithm
+                int **fixed_copy = allocateBoard(size);
+                for (int i = 0; i < size; i++) {
+                    memcpy(fixed_copy[i], isFixed[i], size * sizeof(int));
+                }
+                
+                solve_sudoku_sa(board, fixed_copy, size, T_start, T_end, alpha, max_iterations);
+                
+                // Update isFixed based on solution
+                for (int i = 0; i < size; i++) {
+                    for (int j = 0; j < size; j++) {
+                        if (board[i][j] != 0) {
+                            isFixed[i][j] = 1;
+                        }
+                    }
+                }
+                
+                freeBoard(fixed_copy, size);
+                printBoard();
+                exit(0);
+            }
+        }
+        
         printf("\nPodaj: wiersz kolumna wartość (1-%d)\n", size);
         printf("Użyj wartości 0, aby usunąć wpis. Wpisz 0 0 0, aby zakończyć grę.\n");
         printf("Twój ruch: ");
@@ -263,14 +296,29 @@ int main() {
     solution = allocateBoard(size);
     isFixed = allocateBoard(size);
 
-    generateBoard(solution, size);
-    copyBoard(solution, board);
+    // Generuj planszę w pętli aż będzie poprawna
+    int valid = 0;
+        while (!valid) {
+            generateBoard(solution, size);
+            valid = 1;
+            
+            // Dodatkowa weryfikacja dla 4x4
+            if (size == 4) {
+                for (int i = 0; i < size && valid; i++) {
+                    for (int j = 0; j < size && valid; j++) {
+                        if (solution[i][j] == 0) {
+                            valid = 0;
+                        }
+                    }
+                }
+            }
+        }
 
+    copyBoard(solution, board);
      // Oznaczenie stałych pól
     for (int i = 0; i < size; i++)
         for (int j = 0; j < size; j++)
             isFixed[i][j] = 1;
-
     removeCells(difficulty);// Usunięcie części pól
 
     playGame();// Rozpoczęcie gry

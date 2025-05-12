@@ -103,23 +103,30 @@ void fillDiagonal(int **grid, int size, int boxSize) {
  * @return 1 jeśli udało się wypełnić plansze 0 w przeciwnym wypadku
  */
 int fillRemaining(int **grid, int size, int boxSize, int i, int j) {
-    if (i == size) //koniec planszy
+    if (i == size - 1 && j == size)//plansza gotowa 
         return 1;
-    if (j == size)
-        return fillRemaining(grid, size, boxSize, i + 1, 0);
+    // przekroczenie ostatniej kolumny, przejście do następnego wiersza
+    if (j == size) {
+        i++;
+        j = 0;
+    }
+    // jesli komórka już wypełniona, przejście do następnej
     if (grid[i][j] != 0)
         return fillRemaining(grid, size, boxSize, i, j + 1);
-    //próba wstawienia liczby od 1 do size
+    // próba wypełnienia liczby od 1 do size
     for (int num = 1; num <= size; num++) {
+        // sprawdzenie czy liczba może być bezpiecznie wstawiona
         if (checkIfSafe(grid, size, boxSize, i, j, num)) {
             grid[i][j] = num;
-            if (fillRemaining(grid, size, boxSize, i, j + 1))//wypełnianie rekurencyjne
+            //rekurencyjne wypełnienie kolejnych komórek
+            if (fillRemaining(grid, size, boxSize, i, j + 1))
                 return 1;
-            grid[i][j] = 0;// Backtracking - wycofanie nieudanego wstawienia
+            grid[i][j] = 0;//cofniecie sie po niepowodzeniu wypełnienia (backtracking)
         }
     }
     return 0;
 }
+
 
 
 /**

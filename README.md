@@ -1,13 +1,10 @@
 ## Sudoku Generator & Solver
 
 Program generuje plansze Sudoku w trzech rozmiarach: 4x4, 9x9, 16x16
-Po wygenerowaniu pełnego rozwiązania, program usuwa część pól zgodnie z wybranym poziomem trudności, tworząc grę do rozwiązania.
+Po wygenerowaniu pełnego rozwiązania, program usuwa część pól zgodnie z wybranym poziomem trudności, tworząc grę do rozwiązania. W przypadku planszy 9x9 mozliwe jest rozwiązanie za pomocą algorytmu wyżarzania.
 
 ## Kompilacja i uruchomienie
 
-gcc main.c generateboard.c -o sudoku
-./sudoku
+clang main.c generateboard.c SA_algorithm.c -o main
+./main
 
-## Znany problem
-W przypadku planszy 4x4 czasami liczba usuniętych pól może być większa niż wybrana liczba.
-Obecnie próbuje znaleźć przyczynę i naprawić błąd.
