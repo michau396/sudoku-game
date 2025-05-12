@@ -235,7 +235,7 @@ void solve_sudoku_sa(int **initial, int **fixed, int size, double T_start, doubl
         T *= alpha;
         iteration++;
 
-        if (iteration % 1000 == 0) {
+        if (iteration % 100 == 0) {
             printf("Iteracja: %d, T: %.4f, Energia: %d\n", iteration, T, best.energy);
         }
     }
