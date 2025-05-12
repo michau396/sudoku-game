@@ -50,33 +50,38 @@ void copyBoard(int **src, int **dest) {
  */
 void removeCells(int num) {
     int removed = 0;
-    int attempts = 0;
-    int maxAttempts = size * size * 2; // Ograniczenie liczby prób
-    // usuwanie w losowych miejscach
-    while (removed < num && attempts < maxAttempts) {
-        int r = rand() % size;
-        int c = rand() % size;
-        if (board[r][c] != 0) {
-            board[r][c] = 0;
-            isFixed[r][c] = 0;
-            removed++;
-        }
-        attempts++;
+    
+    // Najpierw stwórz listę wszystkich możliwych pozycji
+    int totalCells = size * size;
+    int *positions = malloc(totalCells * sizeof(int));
+    
+    // Wypełnij listę kolejnymi indeksami
+    for (int i = 0; i < totalCells; i++) {
+        positions[i] = i;
     }
     
-    if (removed < num) {
-        // Jeśli nie udało się usunąć wystarczającej liczby komórek,
-        // przejdź przez planszę i usuń pozostałe
-        for (int i = 0; i < size && removed < num; i++) {
-            for (int j = 0; j < size && removed < num; j++) {
-                if (board[i][j] != 0) {
-                    board[i][j] = 0;
-                    isFixed[i][j] = 0;
-                    removed++;
-                }
-            }
+    // Wymieszaj pozycje (Fisher-Yates shuffle)
+    for (int i = totalCells - 1; i > 0; i--) {
+        int j = rand() % (i + 1);
+        int temp = positions[i];
+        positions[i] = positions[j];
+        positions[j] = temp;
+    }
+    
+    // Usuń pierwszych 'num' komórek z wymieszanej listy
+    for (int i = 0; i < totalCells && removed < num; i++) {
+        int pos = positions[i];
+        int row = pos / size;
+        int col = pos % size;
+        
+        if (board[row][col] != 0) {
+            board[row][col] = 0;
+            isFixed[row][col] = 0;
+            removed++;
         }
     }
+    
+    free(positions);
 }
 
 /**
@@ -246,6 +251,9 @@ int main() {
             continue;
         }
         else {
+            if (difficulty < 1) difficulty = 1;
+            if (difficulty > size*size - 1) difficulty = size*size - 1;
+            while (getchar() != '\n');
             break;
         }
         }
