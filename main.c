@@ -149,44 +149,43 @@ void playGame() {
     char input[100];
     time_t startTime = time(NULL);
     int moveCount = 0;
-    while (1) {
-        printBoard();
-        if (size == 9) {
-            char choice;
-            printf("Czy chcesz wykorzystać algorytm SA do rozwiązania Sudoku? (T/N): ");
-            scanf(" %c", &choice);  
-            while(getchar() != '\n'); // Clear input buffer
-        
-            if (choice == 'T' || choice == 't') {
-                printf("Uruchamianie algorytmu wyżarzania...\n");
-                double T_start = 5.0;
-                double T_end = 1e-3;
-                double alpha = 0.999;
-                int max_iterations = 1000000;
-                
-                // Make a copy of isFixed for SA algorithm
-                int **fixed_copy = allocateBoard(size);
-                for (int i = 0; i < size; i++) {
-                    memcpy(fixed_copy[i], isFixed[i], size * sizeof(int));
-                }
-                
-                solve_sudoku_sa(board, fixed_copy, size, T_start, T_end, alpha, max_iterations);
-                
-                // Update isFixed based on solution
-                for (int i = 0; i < size; i++) {
-                    for (int j = 0; j < size; j++) {
-                        if (board[i][j] != 0) {
-                            isFixed[i][j] = 1;
-                        }
+    if (size == 9) {
+        char choice;
+        printf("Czy chcesz wykorzystać algorytm SA do rozwiązania Sudoku? (T/N): ");
+        scanf(" %c", &choice);  
+        while(getchar() != '\n'); // Clear input buffer
+    
+        if (choice == 'T' || choice == 't') {
+            printf("Uruchamianie algorytmu wyżarzania...\n");
+            double T_start = 5.0;
+            double T_end = 1e-3;
+            double alpha = 0.999;
+            int max_iterations = 1000000;
+            
+            // Make a copy of isFixed for SA algorithm
+            int **fixed_copy = allocateBoard(size);
+            for (int i = 0; i < size; i++) {
+                memcpy(fixed_copy[i], isFixed[i], size * sizeof(int));
+            }
+            
+            solve_sudoku_sa(board, fixed_copy, size, T_start, T_end, alpha, max_iterations);
+            
+            // Update isFixed based on solution
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    if (board[i][j] != 0) {
+                        isFixed[i][j] = 1;
                     }
                 }
-                
-                freeBoard(fixed_copy, size);
-                printBoard();
-                exit(0);
             }
+            
+            freeBoard(fixed_copy, size);
+            printBoard();
+            exit(0);
         }
-        
+    }
+    while (1) {
+        printBoard();
         printf("\nPodaj: wiersz kolumna wartość (1-%d)\n", size);
         printf("Użyj wartości 0, aby usunąć wpis. Wpisz 0 0 0, aby zakończyć grę.\n");
         printf("Twój ruch: ");
