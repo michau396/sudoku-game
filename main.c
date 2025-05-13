@@ -151,6 +151,7 @@ void playGame() {
     int moveCount = 0;
     if (size == 9) {
         char choice;
+        printBoard();
         printf("Czy chcesz wykorzystać algorytm SA do rozwiązania Sudoku? (T/N): ");
         scanf(" %c", &choice);  
         while(getchar() != '\n'); // Clear input buffer
